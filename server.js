@@ -78,7 +78,7 @@ const server = http.createServer((req, res) => {
             <td>${m.subscribers || 0}</td>
             <td>${m.qaptenIA || 0}</td>
             <td>${c.serverCount}</td>
-            <td>${c.platformCostPerSub.toFixed(0)}€</td>
+            <td>${c.platformCostTotal.toFixed(0)}€</td>
             <td>${c.mrr}€</td>
             <td>${c.costTotal.toFixed(0)}€</td>
             <td style="color:#${c.margin>0?'2e7d32':'c62828'}">${c.margin.toFixed(1)}%</td>
