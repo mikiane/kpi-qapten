@@ -37,7 +37,9 @@ function calculateMetrics(m) {
     const ips = m.instancesPerServer || 1;
     // Only BYOK users (8€) need dedicated servers.
     // Qapten IA users (24€) are already subscribed — their infra is covered.
-    const serverCount = Math.ceil((m.users_8 + m.users_24) / ips);
+    // Only BYOK users (8€) need dedicated servers.
+    // Qapten IA users (24€) are already subscribers with their own costs covered.
+    const serverCount = m.users_8 > 0 ? Math.ceil(m.users_8 / ips) : 0;
     const infraCost = serverCount * m.serverCost + m.fixedCosts;
     const variableCost = m.users_24 * (m.costPerSub || 0);
     const totalCost = infraCost + variableCost;
