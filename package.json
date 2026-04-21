@@ -1,0 +1,13 @@
+{
+  "name": "kpi-qapten",
+  "version": "0.1.0",
+  "description": "Dashboard KPI pour Qapten - Suivi MRR, abonnées, marges et couts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["kpi", "dashboard", "qapten", "mrr"],
+  "author": "Michel LEVY PROVENCAL",
+  "license": "MIT"
+}
