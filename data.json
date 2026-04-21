@@ -1,15 +1,11 @@
 {
-  "users": 0,
-  "active_instances": 0,
-  "messages_today": 0,
-  "revenue": 0,
-  "last_update": "Jamais",
   "months": [
     {
       "monthKey": "2026-04",
       "monthLabel": "avril 2026",
-      "users_8": 58,
-      "users_24": 11,
+      "byok": 8,
+      "qaptenIA": 11,
+      "costPerSub": 15,
       "serverCost": 60,
       "instancesPerServer": 15,
       "fixedCosts": 60,

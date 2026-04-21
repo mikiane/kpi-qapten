@@ -28,8 +28,8 @@ function getFormData() {
         month = {
             monthKey: now,
             monthLabel: getCurrentMonth(),
-            totalUsers: 0,       // total abonnés
-            qaptenIA: 0,         // inclus dans totalUsers
+            byok: 0,
+            qaptenIA: 0,
             costPerSub: 0,
             serverCost: 0,
             instancesPerServer: 1,
@@ -43,18 +43,18 @@ function getFormData() {
 }
 
 function calculateMetrics(m) {
-    const totalUsers = m.totalUsers || 0;
-    const qaptenIA = m.qaptenIA || 0;
-    const byok = totalUsers - qaptenIA;
-    const mrr = (byok * 8) + (qaptenIA * 24);
+    const byok = m.byok || 0;
+    const qia = m.qaptenIA || 0;
+    const total = byok + qia;
+    const mrr = (byok * 8) + (qia * 24);
     const ips = m.instancesPerServer || 1;
-    const serverCount = totalUsers > 0 ? Math.ceil(totalUsers / ips) : 0;
+    const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
     const infraCost = serverCount * m.serverCost + m.fixedCosts;
-    const variableCost = qaptenIA * (m.costPerSub || 0);
+    const variableCost = qia * (m.costPerSub || 0);
     const totalCost = infraCost + variableCost;
     const margin = mrr > 0 ? ((mrr - totalCost) / mrr * 100) : 0;
     const profit = mrr - totalCost;
-    return { mrr, serverCount, infraCost, variableCost, totalCost, margin, profit, totalUsers: m.totalUsers || 0 };
+    return { mrr, total, serverCount, infraCost, variableCost, totalCost, margin, profit };
 }
 
 const server = http.createServer((req, res) => {
@@ -64,12 +64,11 @@ const server = http.createServer((req, res) => {
     const sorted = [...data.months].sort((a, b) => b.monthKey.localeCompare(a.monthKey));
     const rows = sorted.map(m => {
         const c = calculateMetrics(m);
-        const byok = (m.totalUsers || 0) - (m.qaptenIA || 0);
         return `<tr>
             <td>${m.monthLabel}</td>
-            <td>${m.totalUsers}</td>
+            <td>${m.byok || 0}</td>
             <td>${m.qaptenIA || 0}</td>
-            <td>${byok}</td>
+            <td>${(m.byok || 0) + (m.qaptenIA || 0)}</td>
             <td>${c.mrr}€</td>
             <td>${m.serverCost}€</td>
             <td>${m.instancesPerServer}</td>
@@ -110,7 +109,7 @@ tr:last-child td{border-bottom:none}
 
 <div class="metrics">
     <div class="metric"><div class="val" id="v_mrr">${mt.mrr}€</div><div class="label">MRR</div></div>
-    <div class="metric"><div class="val" id="v_users">${form.totalUsers || 0}</div><div class="label">Total abonnés</div></div>
+    <div class="metric"><div class="val" id="v_users">${mt.total}</div><div class="label">Total abonnés</div></div>
     <div class="metric"><div class="val">${form.qaptenIA || 0}</div><div class="label">Dont Qapten IA</div></div>
     <div class="metric"><div class="val" id="v_margin" style="color:#${mt.margin>0?'2e7d32':'c62828'}">${mt.margin.toFixed(1)}%</div><div class="label">Marge nette</div></div>
     <div class="metric"><div class="val" id="v_profit" style="color:#${mt.profit>0?'2e7d32':'c62828'}">${mt.profit.toFixed(0)}€</div><div class="label">Profit</div></div>
@@ -122,39 +121,35 @@ tr:last-child td{border-bottom:none}
 <div class="form">
     <h2>Saisie — ${form.monthLabel}</h2>
     <div class="form-grid">
-        <div class="form-group"><label>Total abonnés</label><input type="number" id="f_total" value="${form.totalUsers || 0}" min="0"></div>
-        <div class="form-group"><label>Dont abonnés Qapten IA (24€/mo)</label><input type="number" id="f_qia" value="${form.qaptenIA || 0}" min="0"></div>
-        <div class="form-group"><label>Coût par abonné Qapten (€/mo)</label><input type="number" id="f_cps" value="${form.costPerSub || ''}" min="0" step="0.01"></div>
+        <div class="form-group"><label>Users BYOK (8€/mo)</label><input type="number" id="f_byok" value="${form.byok || 0}" min="0"></div>
+        <div class="form-group"><label>Abonnés Qapten IA (24€/mo)</label><input type="number" id="f_qia" value="${form.qaptenIA || 0}" min="0"></div>
+        <div class="form-group"><label>Coût par ab. Qapten (€/mo)</label><input type="number" id="f_cps" value="${form.costPerSub||''}" min="0" step="0.01"></div>
         <div class="form-group"><label>Coût / serveur (€/mo)</label><input type="number" id="f_srv" value="${form.serverCost}" min="0"></div>
         <div class="form-group"><label>Instances / serveur</label><input type="number" id="f_ips" value="${form.instancesPerServer}" min="1"></div>
         <div class="form-group"><label>Coûts fixes (€/mo)</label><input type="number" id="f_fc" value="${form.fixedCosts}" min="0"></div>
-        <div class="form-group"><label>Notes</label><input type="text" id="f_notes" value="${form.notes || ''}" placeholder="..."></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="f_notes" value="${form.notes||''}" placeholder="..."></div>
     </div>
     <button class="btn" onclick="save()">💾 Sauvegarder</button>
 </div>
 
 <h2 style="margin-bottom:12px">Historique</h2>
 <table>
-    <tr><th>Mois</th><th>Total</th><th>Dont QIA</th><th>BYOK seuls</th><th>MRR</th><th>Coût/srv</th><th>Inst./srv</th><th>Coût/abonné</th><th>Var.</th><th>Infra</th><th>Marge</th><th>Profit</th></tr>
+    <tr><th>Mois</th><th>BYOK</th><th>Qapten IA</th><th>Total</th><th>MRR</th><th>Coût/srv</th><th>Inst./srv</th><th>Coût/ab.</th><th>Var.</th><th>Infra</th><th>Marge</th><th>Profit</th></tr>
     ${rows}
 </table>
 <div class="toast" id="toast">✅ Sauvegardé !</div>
 
 <script>
 function calc(){
-    const total = +f_total.value || 0;
+    const byok = +f_byok.value || 0;
     const qia = +f_qia.value || 0;
-    const byok = total - qia;
-    const srv = +f_srv.value || 0;
-    const ips = +f_ips.value || 1;
-    const fc = +f_fc.value || 0;
+    const srv = +f_srv.value || 0, ips = +f_ips.value || 1, fc = +f_fc.value || 0;
     const cps = +f_cps.value || 0;
+    const total = byok + qia;
     const mrr = byok * 8 + qia * 24;
     const sc = total > 0 ? Math.ceil(total / ips) : 0;
-    const infra = sc * srv + fc;
-    const variable = qia * cps;
-    const tc = infra + variable;
-    const mg = mrr > 0 ? ((mrr - tc) / mrr * 100) : 0;
+    const infra = sc * srv + fc, variable = qia * cps;
+    const tc = infra + variable, mg = mrr > 0 ? ((mrr - tc) / mrr * 100) : 0;
     document.getElementById('v_mrr').textContent = mrr + '€';
     document.getElementById('v_users').textContent = total;
     const mc = document.getElementById('v_margin');
@@ -162,11 +157,11 @@ function calc(){
     const pc = document.getElementById('v_profit');
     pc.textContent = (mrr - tc) + '€'; pc.style.color = (mrr - tc) > 0 ? '#2e7d32' : '#c62828';
 }
-['f_total','f_qia','f_cps','f_srv','f_ips','f_fc'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+['f_byok','f_qia','f_cps','f_srv','f_ips','f_fc'].forEach(id => document.getElementById(id).addEventListener('input', calc));
 async function save(){
     const body = {
         monthKey:'${form.monthKey}', monthLabel:'${form.monthLabel}',
-        totalUsers: +f_total.value, qaptenIA: +f_qia.value,
+        byok: +f_byok.value, qaptenIA: +f_qia.value,
         costPerSub: +f_cps.value, serverCost: +f_srv.value,
         instancesPerServer: +f_ips.value, fixedCosts: +f_fc.value,
         notes: f_notes.value
