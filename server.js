@@ -53,12 +53,13 @@ function calculateMetrics(m) {
     const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
 
     // Coûts totaux = (serveurs × coût/serveur) + (coût/QIA × nbr QIA) + coûts fixes
-    const costTotal = (serverCount * m.serverCost) + (qia * (m.costPerQIA || 0)) + m.fixedCosts;
+    const platformCostTotal = serverCount * m.serverCost;
+    const costTotal = platformCostTotal + (qia * (m.costPerQIA || 0)) + m.fixedCosts;
 
     const margin = mrr > 0 ? ((mrr - costTotal) / mrr * 100) : 0;
     const profit = mrr - costTotal;
 
-    return { mrr, total, serverCount, platformCostPerSub, platformCostTotal, costTotal, margin, profit };
+    return { mrr, total, serverCount, platformCostTotal, costTotal, margin, profit };
 }
 
 const server = http.createServer((req, res) => {
