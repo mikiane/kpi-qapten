@@ -52,8 +52,8 @@ function calculateMetrics(m) {
     const ips = m.instancesPerServer || 1;
     const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
 
-    // Coûts totaux = (serveurs × coût/serveur) + (coût/QIA × nbr QIA)
-    const costTotal = (serverCount * m.serverCost) + (qia * (m.costPerQIA || 0));
+    // Coûts totaux = (serveurs × coût/serveur) + (coût/QIA × nbr QIA) + coûts fixes
+    const costTotal = (serverCount * m.serverCost) + (qia * (m.costPerQIA || 0)) + m.fixedCosts;
 
     const margin = mrr > 0 ? ((mrr - costTotal) / mrr * 100) : 0;
     const profit = mrr - costTotal;
