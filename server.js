@@ -52,13 +52,8 @@ function calculateMetrics(m) {
     const ips = m.instancesPerServer || 1;
     const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
 
-    // Coût total plateforme = nbre serveurs × coût/serveur
-    const platformCostTotal = serverCount * m.serverCost;
-    // Coût plateforme par abonné = coût total plateforme / total abonnés
-    const platformCostPerSub = total > 0 ? platformCostTotal / total : 0;
-
-    // Coûts totaux = (coût/QIA × nbr QIA) + (coût total plateforme) + fixes
-    const costTotal = (qia * (m.costPerQIA || 0)) + platformCostTotal + m.fixedCosts;
+    // Coûts totaux = (serveurs × coût/serveur) + (coût/QIA × nbr QIA)
+    const costTotal = (serverCount * m.serverCost) + (qia * (m.costPerQIA || 0));
 
     const margin = mrr > 0 ? ((mrr - costTotal) / mrr * 100) : 0;
     const profit = mrr - costTotal;
