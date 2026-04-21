@@ -43,25 +43,27 @@ function getFormData() {
 }
 
 function calculateMetrics(m) {
-    const subs = m.subscribers || 0;          // abonnés (8€/mo)
-    const qia = m.qaptenIA || 0;              // Qapten IA (24€/mo)
-    const total = subs + qia;                 // total utilisé pour le nbre de serveurs
+    const subs = m.subscribers || 0;
+    const qia = m.qaptenIA || 0;
+    const total = subs + qia;
 
     const mrr = (subs * 8) + (qia * 24);
 
     const ips = m.instancesPerServer || 1;
     const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
 
-    // Coût plateforme par abonné = coût/serveur × nbre de serveurs
-    const platformCostPerSub = serverCount * m.serverCost;
+    // Coût total plateforme = nbre serveurs × coût/serveur
+    const platformCostTotal = serverCount * m.serverCost;
+    // Coût plateforme par abonné = coût total plateforme / total abonnés
+    const platformCostPerSub = total > 0 ? platformCostTotal / total : 0;
 
-    // Coûts totaux = (coût/qia × qia) + (plateforme/ab × abonnés) + frais fixes
-    const costTotal = (qia * (m.costPerQIA || 0)) + (platformCostPerSub * subs) + m.fixedCosts;
+    // Coûts totaux = (coût/QIA × nbr QIA) + (coût total plateforme) + fixes
+    const costTotal = (qia * (m.costPerQIA || 0)) + platformCostTotal + m.fixedCosts;
 
     const margin = mrr > 0 ? ((mrr - costTotal) / mrr * 100) : 0;
     const profit = mrr - costTotal;
 
-    return { mrr, total, serverCount, platformCostPerSub, costTotal, margin, profit };
+    return { mrr, total, serverCount, platformCostPerSub, platformCostTotal, costTotal, margin, profit };
 }
 
 const server = http.createServer((req, res) => {
