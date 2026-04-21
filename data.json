@@ -3,9 +3,9 @@
     {
       "monthKey": "2026-04",
       "monthLabel": "avril 2026",
-      "byok": 8,
+      "subscribers": 58,
       "qaptenIA": 11,
-      "costPerSub": 15,
+      "costPerQIA": 15,
       "serverCost": 60,
       "instancesPerServer": 15,
       "fixedCosts": 60,
