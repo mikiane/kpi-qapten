@@ -35,7 +35,9 @@ function getFormData() {
 function calculateMetrics(m) {
     const mrr = (m.users_8 * 8) + (m.users_24 * 24);
     const ips = m.instancesPerServer || 1;
-    const serverCount = Math.ceil((m.users_8 + m.users_24) / ips);
+    // Only BYOK users (8€) need dedicated servers.
+    // Qapten IA users (24€) are already subscribed — their infra is covered.
+    const serverCount = m.users_8 > 0 ? Math.ceil(m.users_8 / ips) : 0;
     const infraCost = serverCount * m.serverCost + m.fixedCosts;
     const variableCost = m.users_24 * (m.costPerSub || 0);
     const totalCost = infraCost + variableCost;
@@ -126,7 +128,7 @@ function calc(){
     const srv=+f_srv.value||0, ips=+f_ips.value||1, fc=+f_fc.value||0;
     const cps=+f_cps.value||0;
     const mrr=u8*8+u24*24;
-    const sc=Math.ceil((u8+u24)/ips)||1;
+    const sc=u8>0?Math.ceil(u8/ips):0;
     const infra=sc*srv+fc, variable=u24*cps;
     const tc=infra+variable, mg=mrr>0?((mrr-tc)/mrr*100):0;
     document.getElementById('v_mrr').textContent=mrr+'€';
