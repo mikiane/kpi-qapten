@@ -50,7 +50,7 @@ function calculateMetrics(m) {
     const mrr = (subs * 8) + (qia * 24);
 
     const ips = m.instancesPerServer || 1;
-    const serverCount = total > 0 ? Math.ceil(total / ips) : 0;
+    const serverCount = subs > 0 ? Math.ceil(subs / ips) : 0;
 
     // Coûts totaux = (serveurs × coût/serveur) + (coût/QIA × nbr QIA) + coûts fixes
     const platformCostTotal = serverCount * m.serverCost;
@@ -147,9 +147,9 @@ function calc(){
     const ips = +f_ips.value || 1;
     const fc = +f_fc.value || 0;
     const mrr = subs * 8 + qia * 24;
-    const sc = total > 0 ? Math.ceil(total / ips) : 0;
+    const sc = subs > 0 ? Math.ceil(subs / ips) : 0;
     const pps = sc * srv;
-    const ct = qia * cq + pps * subs + fc;
+    const ct = qia * cq + pps + fc;
     const mg = mrr > 0 ? ((mrr - ct) / mrr * 100) : 0;
     document.getElementById('v_mrr').textContent = mrr + '€';
     document.getElementById('v_subs').textContent = subs;
